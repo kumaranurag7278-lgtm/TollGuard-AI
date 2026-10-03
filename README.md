@@ -24,10 +24,10 @@ Traditional toll plazas rely on static single-sensor distance thresholds that fa
 
 ### 1. 📹 Real-Time 30 FPS Computer Vision & Tracking
 - **YOLOv5 Nano ONNX Engine:** Ultra-lightweight (7.5 MB, ~1.9M parameters) single-stage convolutional neural network executed via **OpenCV 5.0 DNN**, achieving **35–50 FPS on standard CPUs** without requiring a dedicated GPU.
-- **Adaptive Centroid Tracker:** Dynamically compensates for detector dropouts via temporal motion allowance ($\text{allowed\_distance} = \text{base} + \text{missed} \times \text{allowance}$), assigning permanent sequential virtual tokens (`#1, #2, #3...`).
+- **Adaptive Centroid Tracker:** Dynamically compensates for detector dropouts via temporal motion allowance (`allowed_distance = base + (missed * allowance)`), assigning permanent sequential virtual tokens (`#1, #2, #3...`).
 
 ### 2. 🛡️ Dynamic Back-Edge Corridor Integrity (Anti-Lane-Cutting)
-- **Autonomous Spatial Queue Analysis:** Continuously computes the coordinate of the legitimate tail of the line ($y_{\text{back\_edge}} = \max(\{y_i\})$).
+- **Autonomous Spatial Queue Analysis:** Continuously computes the coordinate of the legitimate tail of the line (`y_back_edge = max(all_y_coordinates)`).
 - **Forced Lateral Entry Detection:** Flags vehicles that cut in laterally ahead of waiting patrons. Automatically locks the physical boom barrier and logs timestamped evidence.
 
 ### 3. 🔍 Automatic Number Plate Recognition (ANPR) & e-Challan
@@ -47,7 +47,7 @@ Traditional toll plazas rely on static single-sensor distance thresholds that fa
 - Integrates a one-click digital police dispatch link (`https://wa.me/`) generating an official formatted traffic notice with vehicle plate, location, violation proof, and statutory citations directly to the owner's mobile without requiring QR codes.
 
 ### 7. 🧠 On-Chip Edge AI (TinyML on ESP32)
-- **Zero Cloud Latency:** A quantized C++ Decision Tree (`queue_tinyml_model.h`, max depth 4, 99.5% accuracy) runs directly on the ESP32 Xtensa Dual-Core 240MHz CPU in **$<15$ microseconds**.
+- **Zero Cloud Latency:** A quantized C++ Decision Tree (`queue_tinyml_model.h`, max depth 4, 99.5% accuracy) runs directly on the ESP32 Xtensa Dual-Core 240MHz CPU in **< 15 microseconds**.
 - **Offline Autonomy:** Continues queue state classification (`SHORT_WAIT`, `MEDIUM_WAIT`, `LONG_WAIT`) even during complete internet or cloud outages.
 
 ### 8. ⏱️ Passenger Car Unit (PCU) Wait-Time Forecasting
@@ -89,7 +89,7 @@ Traditional toll plazas rely on static single-sensor distance thresholds that fa
 
 ## 🔌 Hardware Circuit & Wiring (ESP32 + HC-SR04)
 
-The HC-SR04 sensor operates at **5V VCC**, while ESP32 GPIO inputs are **3.3V safe**. A **voltage divider** ($1\text{k}\Omega + 2\text{k}\Omega$) protects GPIO 27 from over-voltage.
+The HC-SR04 sensor operates at **5V VCC**, while ESP32 GPIO inputs are **3.3V safe**. A **voltage divider** (1kΩ + 2kΩ) protects GPIO 27 from over-voltage.
 
 ```
        [ESP32 DevKit V1]                             [HC-SR04 Sensor]
@@ -113,7 +113,7 @@ The HC-SR04 sensor operates at **5V VCC**, while ESP32 GPIO inputs are **3.3V sa
 | :--- | :--- | :--- |
 | **V5 / VIN** | **VCC** | 5V Power Supply |
 | **GND** | **GND** | Common Ground |
-| **GPIO 14** | **TRIG** | Trigger Pulse Output (10 $\mu\text{s}$) |
+| **GPIO 14** | **TRIG** | Trigger Pulse Output (10 µs) |
 | **GPIO 27** | **ECHO** | Voltage Divider Center (~3.3V Safe Echo Input) |
 
 ---
