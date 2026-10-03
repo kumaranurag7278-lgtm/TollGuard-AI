@@ -5,10 +5,6 @@
 [![Edge AI](https://img.shields.io/badge/Edge%20AI-TinyML%20Decision%20Tree-orange?logo=arduino&logoColor=white)](https://github.com)
 [![Vision](https://img.shields.io/badge/Vision%20AI-YOLOv5%20Nano%20ONNX-green?logo=opencv&logoColor=white)](https://opencv.org)
 [![Framework](https://img.shields.io/badge/Dashboard-Streamlit-FF4B4B?logo=streamlit&logoColor=white)](https://streamlit.io)
-[![License](https://img.shields.io/badge/License-MIT-purple.svg)](LICENSE)
-
-> **CGC University Mohali | Department of Artificial Intelligence & Data Science**  
-> *Engineering Clinic Project #190: IoT Sensor Fusion, Edge AI (TinyML), Computer Vision & Automated Highway Law Enforcement*
 
 ---
 
@@ -200,21 +196,8 @@ python simulate_demo.py
 
 ---
 
-## 👥 Academic Attribution & Team
-
-**Engineering Clinic Project #190**  
-**School of Engineering & Technology, CGC University Mohali**  
-**Department:** Computer Science & Engineering (AI & Data Science) — CSE-Apex  
-**Academic Year:** 2026–2027  
-**Project Mentor:** Baljinder Kaur  
-
-**Team Members:**
+## 👨‍💻 Built By
 - **Anurag Kumar**
 - **Suraj Mandal**
 - **Ayush**
 - **Divine Diamond**
-
----
-
-## 📄 License
-This project is open-source under the [MIT License](LICENSE).
