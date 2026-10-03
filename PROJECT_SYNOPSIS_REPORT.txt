@@ -1,0 +1,190 @@
+================================================================================
+School of Engineering & Technology, CGC University Mohali
+Department of Artificial Intelligence & Data Science
+ENGINEERING CLINIC — PROJECT SYNOPSIS
+================================================================================
+
+PROJECT TITLE:
+AI-Powered Smart Queue & Toll Enforcement System Using IoT Sensor Fusion and Edge AI
+
+AI / ML Techniques:
+YOLOv5 Object Detection, Adaptive Centroid Tracking, Dynamic Back-Edge Corridor 
+(Anti-Cut AI), On-Chip TinyML Decision Trees, PCU Wait-Time Estimation, and 
+Random Forest/SVM Sensor Baseline.
+
+IoT Hardware Used:
+ESP32 DevKit V1 (38-pin), HC-SR04 Ultrasonic Distance Sensor, 1kΩ + 2kΩ Resistor 
+Voltage Divider, Solderless Breadboard, Jumper Wires, Micro-USB Cable, Laptop HD Camera.
+
+Team Members:
+- Anurag Kumar — 2510003151
+- Suraj Mandal — 2510003166
+- Ayush — 2510003161
+- Divine Diamond — 2510003176
+
+Project Mentor: Baljinder Kaur
+Department: CSE-Apex
+Academic Year: 2026–2027
+
+--------------------------------------------------------------------------------
+1. ABSTRACT
+--------------------------------------------------------------------------------
+Queue management is an important operational challenge across college offices, clinics, 
+bank counters, and highway toll plazas. During peak periods, manual visual observation 
+is inefficient, while traditional basic sensor systems that merely measure distance to 
+classify queues as 'Short/Medium/Long' fail to provide genuine AI value because human 
+staff can judge crowd depth at a glance. Furthermore, existing systems cannot detect 
+behavioral queue infractions such as line-cutting or out-of-sequence bypasses.
+
+This project presents an advanced AI-Powered Customer Queue and Toll Enforcement System 
+integrating low-cost IoT physical proximity sensing with real-time computer vision and 
+on-chip TinyML Edge AI. The system monitors pedestrian service counters and vehicular 
+highway toll lanes via two synchronized subsystems:
+1. An ESP32 microcontroller with an HC-SR04 ultrasonic sensor executing an on-chip 
+   TinyML Decision Tree for local congestion classification in microseconds.
+2. A laptop camera running a pretrained YOLOv5 neural network via OpenCV DNN for 
+   real-time entity tracking at 30+ FPS.
+
+The core innovation is a Dynamic Back-Edge Corridor that continuously tracks the spatial 
+position of the legitimate last member in line. When a new entity appears ahead of the 
+dynamic back edge rather than at the tail, the system automatically flags a mid-corridor 
+forced-entry violation, captures cropped photographic proof, applies a statutory fine 
+(₹500 under Section 177 of the Motor Vehicles Act), and locks the simulated boom barrier 
+on a unified Streamlit operator dashboard. Wait times are projected using civil engineering 
+Passenger Car Unit (PCU) service duration weighting. The entire prototype is implemented 
+within an approximate student budget of ₹677, demonstrating an end-to-end fusion of 
+embedded hardware, Edge AI, computer vision, and real-time web enforcement.
+
+--------------------------------------------------------------------------------
+2. INTRODUCTION
+--------------------------------------------------------------------------------
+Queues occur whenever the arrival rate of customers temporarily exceeds the service 
+capacity of a service counter or toll booth. Although queues are ubiquitous, most 
+facilities still depend on visual inspection or physical token machines, which cannot 
+prevent line-cutting or dynamically optimize counter flow.
+
+Recent developments in IoT make microcontrollers like the ESP32 ideal for rapid 
+prototyping because they combine a 240MHz dual-core CPU with integrated Wi-Fi and 
+Bluetooth. Concurrently, computer vision models like YOLOv5 nano enable real-time 
+object detection at 30–40 FPS on standard consumer CPUs without requiring expensive 
+GPU hardware.
+
+Rather than using AI merely to replicate human visual judgment, this project focuses on 
+behavioral queue integrity: detecting spatial sequence violations that human staff miss, 
+differentiating vehicle classes (Cars vs. Heavy Trucks) to forecast wait times 
+realistically, and running Edge AI directly on microcontroller silicon to maintain 
+operation even if internet connectivity drops.
+
+--------------------------------------------------------------------------------
+3. PROBLEM STATEMENT
+--------------------------------------------------------------------------------
+Manual monitoring of queues is labor-intensive, subjective, and prone to disputes. 
+Meanwhile, simple sensor-only prototypes that only measure distance to classify queue 
+size as Short/Medium/Long fail to demonstrate real AI value, as human observers can 
+perform that estimation effortlessly. Existing solutions also suffer from lack of 
+anti-line-cutting enforcement, naive headcount wait estimations that ignore vehicle 
+mix, and heavy cloud latency.
+
+The specific problem addressed by this project is to design and validate an integrated 
+IoT and Computer Vision system that enforces sequential queue discipline via dynamic 
+corridor tracking, detects line-cutting violations with photographic evidence, predicts 
+PCU-weighted clearance times, and executes on-chip TinyML inference on an ESP32 
+microcontroller within a ₹1000 budget.
+
+--------------------------------------------------------------------------------
+4. OBJECTIVES
+--------------------------------------------------------------------------------
+1. To develop a low-cost IoT sensing node using an ESP32 DevKit and HC-SR04 ultrasonic 
+   sensor with a 1kΩ + 2kΩ resistor voltage divider for safe 3.3V logic level shifting.
+2. To embed a TinyML Decision Tree model directly on the ESP32 microcontroller to 
+   classify queue states (Short, Medium, Long Wait) on-chip in microseconds.
+3. To deploy a real-time YOLOv5 nano computer vision pipeline to detect pedestrians and 
+   vehicles at 30+ FPS, auto-assigning virtual sequential queue tokens.
+4. To implement an Adaptive Centroid Tracker that compensates for detector dropouts using 
+   temporal motion allowance (allowed_distance = base + missed × allowance).
+5. To enforce queue integrity using a Dynamic Back-Edge Corridor that catches line-cutters, 
+   locks the boom barrier, captures photo evidence, and computes PCU-weighted wait times 
+   on a unified Streamlit dashboard.
+
+--------------------------------------------------------------------------------
+5. LITERATURE SURVEY / EXISTING SYSTEMS
+--------------------------------------------------------------------------------
+- Manual Observation: Staff visually inspect queue. Subjective, labor-intensive, no history. 
+  Our system replaces this with 24/7 automated AI monitoring.
+- Static Ultrasonic: Single fixed distance threshold. Rejects real AI value, no line-cutting detection. 
+  Our system fuses physical distance with computer vision and dynamic corridors.
+- Infrared Beam Counters: Simple beam break count. Cannot describe queue geometry or sequence. 
+  Our system performs continuous 2D spatial coordinate tracking.
+- SORT Tracking (Prior Art): Kalman filter + Hungarian algorithm. Fails during extended dropouts. 
+  Our system uses Adaptive Centroid Tracking with missed-frame scaling.
+- US Patent 10,262,328: Dynamic queue entry determination. Expensive commercial infrastructure. 
+  Our system re-engineers this as a low-cost DIY edge corridor.
+- US Patent 10,755,107: Virtual boundary passage lines. Rigid commercial physical setup. 
+  Our system provides flexible software-defined multi-lane boundaries.
+
+--------------------------------------------------------------------------------
+6. PROPOSED SYSTEM ARCHITECTURE
+--------------------------------------------------------------------------------
+The proposed system contains four integrated layers:
+1. Physical Sensing Layer: ESP32 reads HC-SR04 echo pulse duration through a safe 
+   voltage divider.
+2. On-Chip Edge AI Layer: ESP32 executes an embedded C++ decision tree (queue_tinyml_model.h) 
+   classifying queue congestion in microseconds.
+3. Computer Vision & Corridor Layer: Pretrained YOLOv5 nano detects entities. The 
+   adaptive tracker maintains token order, while the dynamic back-edge corridor catches 
+   mid-lane lateral insertions and captures cropped violation evidence.
+4. Presentation & Control Layer: Unified Streamlit dashboard provides high-speed 30 FPS 
+   video streaming, live proximity waveform graph, Boom Barrier lockout, PCU wait-time 
+   projections, and e-Challan generation.
+
+--------------------------------------------------------------------------------
+7. HARDWARE REQUIREMENTS & COST ANALYSIS
+--------------------------------------------------------------------------------
+- ESP32 DevKit V1 (38-pin, 240MHz, 4MB Flash) : ₹489
+- HC-SR04 Ultrasonic Distance Sensor         : ₹69
+- Resistors (1kΩ and 2kΩ Voltage Divider)    : ₹4
+- Solderless Breadboard (30 rows)            : ₹85
+- Jumper Wires (Male-to-Male, 4 wires)       : ₹30
+- USB Data Cable                             : Owned (₹0)
+- Laptop HD Camera                           : Owned (₹0)
+TOTAL PROTOTYPE HARDWARE EXPENDITURE         : ₹677 (Well within ₹1000 limit)
+
+--------------------------------------------------------------------------------
+8. SOFTWARE AND AI/ML STACK
+--------------------------------------------------------------------------------
+- Embedded Edge AI : C++ / Arduino IDE / arduino-cli compiling queue_tinyml_model.h
+- Computer Vision  : Python 3.14, OpenCV 5.0 DNN, YOLOv5 nano ONNX (COCO classes)
+- Tracking Engine  : NumPy, SciPy (Euclidean distance association matrices)
+- Streaming Server : Python ThreadingHTTPServer delivering 30 FPS MJPEG stream on port 5001
+- Web Dashboard    : Streamlit 1.64.0 (Boom barrier control, live graph, evidence locker)
+- ML Benchmark     : scikit-learn (Random Forest: 99.67% accuracy vs. SVM: 97.33% accuracy)
+
+--------------------------------------------------------------------------------
+9. EXPECTED OUTCOMES & APPLICATIONS
+--------------------------------------------------------------------------------
+- Fully functioning dual-mode prototype operating across both Pedestrian Counters and 
+  Highway Toll Plazas (FASTag lanes).
+- Autonomous line-cutting detection flagging violators and saving photographic evidence to disk.
+- Real-time boom barrier lockout enforcing ₹500 statutory penalties.
+- Validated edge AI execution running directly on the ESP32 microcontroller CPU.
+- Butter-smooth 30 FPS video streaming and live sensor waveform graphing on a single unified web dashboard.
+- Complete prototype delivered well within budget at ₹677.
+
+Applications:
+- Highway Automated Toll Plazas (FASTag bottleneck lane enforcement)
+- Bank & Financial Service Counters (fair token queueing)
+- Hospital Triage & Outpatient Registration Desks
+- College Examination & Fee Registration Counters
+
+--------------------------------------------------------------------------------
+10. REFERENCES
+--------------------------------------------------------------------------------
+[1] L. Breiman, "Random Forests," Machine Learning, vol. 45, no. 1, pp. 5–32, 2001.
+[2] C. Cortes and V. Vapnik, "Support-Vector Networks," Machine Learning, vol. 20, pp. 273–297, 1995.
+[3] J. Redmon et al., "You Only Look Once: Unified, Real-Time Object Detection," IEEE CVPR, 2016.
+[4] A. Bewley et al., "Simple Online and Realtime Tracking (SORT)," IEEE ICIP, 2016.
+[5] US Patent 10,262,328, "Dynamic Queue Entry Point Determination and Monitoring," assigned to Disney Enterprises, Inc., Apr. 16, 2019.
+[6] US Patent 10,755,107, "Passage Detection System Using Virtual Boundary Lines," Aug. 25, 2020.
+[7] Indian Motor Vehicles Act, Section 177: General Provision for Punishment of Offences (Lane Discipline).
+[8] Espressif Systems, "ESP32 Series Datasheet & Technical Reference Manual," v4.2, 2024.
+================================================================================

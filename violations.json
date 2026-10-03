@@ -1,0 +1,62 @@
+[
+  {
+    "id": 5,
+    "class_name": "car",
+    "license_plate": "PB 65 CD 4199",
+    "plate_snapshot": "plate_id_5_1790583711.jpg",
+    "plate_type": "PRIVATE (WHITE)",
+    "violation_type": "Mid-Corridor Lane Cutting",
+    "timestamp": "2026-09-26 21:48:14",
+    "penalty_inr": 500,
+    "status": "UNPAID",
+    "snapshot": "violation_id_5_1790439494.jpg"
+  },
+  {
+    "id": 5,
+    "class_name": "car",
+    "license_plate": "PB 65 CD 4199",
+    "plate_snapshot": "plate_id_5_1790583711.jpg",
+    "plate_type": "PRIVATE (WHITE)",
+    "violation_type": "Mid-Corridor Lane Cutting",
+    "timestamp": "2026-09-26 23:42:44",
+    "penalty_inr": 500,
+    "status": "UNPAID",
+    "snapshot": "violation_id_5_1790446364.jpg"
+  },
+  {
+    "id": 5,
+    "class_name": "car",
+    "license_plate": "PB 65 CD 4199",
+    "plate_snapshot": "plate_id_5_1790583878.jpg",
+    "plate_type": "PRIVATE (WHITE)",
+    "violation_type": "Mid-Corridor Lane Cutting",
+    "timestamp": "2026-09-28 13:54:39",
+    "penalty_inr": 500,
+    "status": "UNPAID",
+    "snapshot": "violation_id_5_1790583879.jpg"
+  },
+  {
+    "id": 5,
+    "class_name": "car",
+    "license_plate": "PB 65 CD 4199",
+    "plate_snapshot": "plate_id_5_1791014113.jpg",
+    "plate_type": "PRIVATE (WHITE)",
+    "violation_type": "Mid-Corridor Lane Cutting",
+    "timestamp": "2026-10-03 13:25:14",
+    "penalty_inr": 500,
+    "status": "UNPAID",
+    "snapshot": "violation_id_5_1791014114.jpg"
+  },
+  {
+    "id": 5,
+    "class_name": "car",
+    "license_plate": "PB 65 CD 4199",
+    "plate_snapshot": "plate_id_5_1791014145.jpg",
+    "plate_type": "PRIVATE (WHITE)",
+    "violation_type": "Mid-Corridor Lane Cutting",
+    "timestamp": "2026-10-03 13:25:46",
+    "penalty_inr": 500,
+    "status": "UNPAID",
+    "snapshot": "violation_id_5_1791014146.jpg"
+  }
+]
