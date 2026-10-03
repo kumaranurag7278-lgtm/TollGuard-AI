@@ -57,57 +57,58 @@ Traditional toll plazas rely on static single-sensor distance thresholds that fa
 
 ## 🏗️ System Architecture
 
-```
-                                  +---------------------------------------+
-                                  |      Overhead Camera / Smartphone     |
-                                  |    (35-degree Angled Gantry Portal)   |
-                                  +-------------------+-------------------+
-                                                      |
-                                                      | 30 FPS Stream
-                                                      v
-+-------------------------------+         +-------------------------------+
-|    Physical ESP32 Edge Node   |         |      Host Laptop (Python)     |
-|  - HC-SR04 Ultrasonic Sensor  |         |  - OpenCV DNN (YOLOv5n ONNX)  |
-|  - On-Chip TinyML Decision    |  UART   |  - Adaptive Centroid Tracker  |
-|  - 3.3V Voltage Divider       | ------> |  - Dynamic Back-Edge Corridor |
-|  - Microsecond Local Decision | (COM9)  |  - ANPR License Plate Engine  |
-+-------------------------------+         |  - WhatsApp e-Challan Gateway |
-                                          +---------------+---------------+
-                                                          |
-                                                          | Shared State
-                                                          v
-                                          +-------------------------------+
-                                          |   Unified Streamlit Control   |
-                                          |   - 30 FPS Native MJPEG HUD   |
-                                          |   - Live Proximity Waveform   |
-                                          |   - Boom Barrier Lockout HUD  |
-                                          |   - e-Challan Legal Registry  |
-                                          +-------------------------------+
+```mermaid
+flowchart TD
+    subgraph Gantry["📷 Overhead Vision Gantry (35° Slanted)"]
+        CAM["Camera / Smartphone Lens<br/>1080p @ 30 FPS Stream"]
+    end
+
+    subgraph EdgeNode["⚡ Physical IoT Edge Node (ESP32)"]
+        ESP["ESP32 Microcontroller (240MHz)"]
+        SONAR["HC-SR04 Ultrasonic Distance Sensor<br/>(1kΩ + 2kΩ Resistor Voltage Divider)"]
+        TINYML["On-Chip TinyML Decision Tree<br/>(&lt;15µs Edge Inference)"]
+        SONAR -->|Echo Waveform| ESP
+        ESP --> TINYML
+    end
+
+    subgraph HostPC["💻 Host Processing Core (Python Engine)"]
+        YOLO["YOLOv5 Nano ONNX Detector<br/>(OpenCV 5.0 DNN @ 45+ FPS)"]
+        TRACK["Adaptive Centroid Tracker<br/>(Dynamic Motion Thresholding)"]
+        CORR["Dynamic Back-Edge Corridor<br/>(Anti-Lane Cutting Algorithm)"]
+        ANPR["ANPR License Plate Recognizer<br/>(HSRP Template & Bumper Crop)"]
+        AMB["Emergency Preemption Engine<br/>(Ambulance Red-Cross Insignia Filter)"]
+        FRAUD["FASTag Tag-Swap Fraud Detector<br/>(Visual AI vs RFID Cross-Verification)"]
+        WA["WhatsApp e-Challan Gateway<br/>(Automated Legal Dispatch)"]
+        
+        CAM --> YOLO
+        YOLO --> TRACK
+        TRACK --> CORR
+        CORR --> ANPR
+        ANPR --> WA
+        YOLO --> AMB
+        YOLO --> FRAUD
+    end
+
+    subgraph Dashboard["📊 Unified Streamlit Control Center (:8501)"]
+        MJPEG["30 FPS High-Speed MJPEG Stream"]
+        HUD["Boom Barrier Lockout &amp; Green Corridor HUD"]
+        WAVE["Live Proximity Waveform Graph"]
+        REG["e-Challan Legal Audit Registry"]
+    end
+
+    TINYML -.->|"UART Serial Stream (COM9)"| HostPC
+    HostPC -->|"Shared Telemetry State"| Dashboard
 ```
 
 ---
 
 ## 🔌 Hardware Circuit & Wiring (ESP32 + HC-SR04)
 
-The HC-SR04 sensor operates at **5V VCC**, while ESP32 GPIO inputs are **3.3V safe**. A **voltage divider** (1kΩ + 2kΩ) protects GPIO 27 from over-voltage.
+The HC-SR04 ultrasonic sensor operates at **5V VCC**, while ESP32 GPIO inputs are **3.3V safe**. A **voltage divider** (1kΩ + 2kΩ) protects GPIO 27 from over-voltage.
 
-```
-       [ESP32 DevKit V1]                             [HC-SR04 Sensor]
-       +-----------------+                           +----------------+
-       |             VIN | =======================> | VCC (5V)       |
-       |             GND | =======================> | GND            |
-       |         GPIO 14 | =======================> | TRIG           |
-       |                 |                          |                |
-       |         GPIO 27 | <----+ [V_out ~ 3.3V]    |                |
-       +-----------------+      |                   |                |
-                               [R1 = 1kΩ]           |                |
-                                |                   |                |
-                                +------------------ | ECHO (5V Out)  |
-                                |                   +----------------+
-                               [R2 = 2kΩ]
-                                |
-                               === (GND)
-```
+<div align="center">
+  <img src="circuit_diagram.jpg" alt="Hardware Circuit Diagram" width="700"/>
+</div>
 
 | ESP32 Pin | Sensor Pin | Description |
 | :--- | :--- | :--- |
@@ -208,10 +209,10 @@ python simulate_demo.py
 **Project Mentor:** Baljinder Kaur  
 
 **Team Members:**
-- **Anurag Kumar** — `2510003151`
-- **Suraj Mandal** — `2510003166`
-- **Ayush** — `2510003161`
-- **Divine Diamond** — `2510003176`
+- **Anurag Kumar**
+- **Suraj Mandal**
+- **Ayush**
+- **Divine Diamond**
 
 ---
 
