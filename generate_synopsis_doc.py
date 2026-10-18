@@ -78,7 +78,7 @@ def create_synopsis_word_document():
     meta_data = [
         ("AI / ML Techniques", "YOLOv5 Object Detection, Adaptive Centroid Tracking, Dynamic Back-Edge Corridor (Anti-Cut AI), On-Chip TinyML Decision Trees, PCU Wait-Time Estimation, and Random Forest/SVM Sensor Baseline"),
         ("IoT Hardware Used", "ESP32 DevKit V1 (38-pin), HC-SR04 Ultrasonic Sensor, 1kΩ + 2kΩ Resistor Voltage Divider, Solderless Breadboard, Jumper Wires, Micro-USB Cable, Laptop HD Camera"),
-        ("Team Members", "Anurag Kumar — 2510003151\nSuraj Mandal — 2510003166\nAyush — 2510003161\nDivine Diamond — 2510003176"),
+        ("Team Members & Roles", "Anurag Kumar (2510003151) — Team Leader & System Architect\nSuraj Mandal (2510003166) — Embedded Systems & IoT Hardware Lead\nAyush (2510003161) — Computer Vision & Deep Learning Lead\nDivine Diamond (2510003176) — Software Engineering & UI/ANPR Lead"),
         ("Project Mentor", "Baljinder Kaur"),
         ("Department", "CSE-Apex"),
         ("Academic Year", "2026–2027")
@@ -287,8 +287,50 @@ def create_synopsis_word_document():
     add_body("• Embedded Edge AI: Executes real-time TinyML inference on ESP32 silicon independently of cloud or Wi-Fi.")
     add_body("• Real-World Applications: Highway toll plazas, university examination/fee counters, hospital registration desks, and bank teller lines.")
 
-    # 10. References
-    add_section_heading("10. References")
+    # 10. Team Roles & Contribution Matrix
+    add_section_heading("10. Team Roles & Contribution Matrix")
+    
+    roles_table = doc.add_table(rows=5, cols=4)
+    roles_table.alignment = WD_TABLE_ALIGNMENT.CENTER
+    roles_table.style = 'Table Grid'
+    
+    headers = ["Team Member", "Univ ID", "Assigned Role", "Core Responsibilities"]
+    header_widths = [Inches(1.5), Inches(1.0), Inches(1.8), Inches(2.5)]
+    
+    for c_idx, h_text in enumerate(headers):
+        c = roles_table.rows[0].cells[c_idx]
+        c.width = header_widths[c_idx]
+        set_cell_background(c, "1B365D")
+        p = c.paragraphs[0]
+        r = p.add_run(h_text)
+        r.bold = True
+        r.font.size = Pt(10)
+        r.font.color.rgb = RGBColor(0xFF, 0xFF, 0xFF)
+        
+    roles_data = [
+        ("Anurag Kumar", "2510003151", "Team Leader & System Architect", "Project lifecycle management, system pipeline architecture, dynamic back-edge corridor algorithm formulation, and hardware-software integration."),
+        ("Suraj Mandal", "2510003166", "Embedded Systems & IoT Hardware Lead", "ESP32 DevKit V1 circuit schematic & breadboard assembly, HC-SR04 voltage divider design, on-chip C++ TinyML Decision Tree compilation, and serial telemetry."),
+        ("Ayush", "2510003161", "Computer Vision & Deep Learning Lead", "YOLOv5 nano ONNX integration via OpenCV DNN, high-speed multi-scale template matching optimization, adaptive centroid tracker tuning, and ambulance emergency recognition."),
+        ("Divine Diamond", "2510003176", "Software Engineering & UI/ANPR Lead", "Real-time Streamlit operator command dashboard design, Automated Number Plate Recognition (ANPR) plate reader engine, FASTag class mismatch auditing, and automated e-Challan evidence logging.")
+    ]
+    
+    for r_idx, row_info in enumerate(roles_data):
+        row = roles_table.rows[r_idx + 1]
+        for c_idx, val in enumerate(row_info):
+            c = row.cells[c_idx]
+            c.width = header_widths[c_idx]
+            if r_idx % 2 == 1:
+                set_cell_background(c, "F8F9FA")
+            p = c.paragraphs[0]
+            r = p.add_run(val)
+            r.font.size = Pt(9.5)
+            if c_idx == 0:
+                r.bold = True
+                
+    doc.add_paragraph() # Spacer
+
+    # 11. References
+    add_section_heading("11. References")
     add_body("[1] L. Breiman, 'Random Forests,' Machine Learning, vol. 45, no. 1, pp. 5–32, 2001.")
     add_body("[2] C. Cortes and V. Vapnik, 'Support-Vector Networks,' Machine Learning, vol. 20, pp. 273–297, 1995.")
     add_body("[3] J. Redmon et al., 'You Only Look Once: Unified, Real-Time Object Detection,' IEEE CVPR, 2016.")
@@ -298,8 +340,18 @@ def create_synopsis_word_document():
     add_body("[7] Indian Motor Vehicles Act, Section 177: General Provision for Punishment of Offences (Lane Discipline).")
     add_body("[8] Espressif Systems, 'ESP32 Series Datasheet & Technical Reference Manual,' v4.2, 2024.")
 
-    doc.save(os.path.join("D:\\New folder", "PROJECT_SYNOPSIS_REPORT.docx"))
-    print("[DOCX Generator] Successfully generated D:\\New folder\\PROJECT_SYNOPSIS_REPORT.docx")
+    # Save to both project root and D:\New folder
+    out_paths = [
+        os.path.join(os.path.dirname(os.path.abspath(__file__)), "PROJECT_SYNOPSIS_REPORT.docx"),
+        os.path.join("D:\\New folder", "PROJECT_SYNOPSIS_REPORT.docx")
+    ]
+    for p in out_paths:
+        try:
+            os.makedirs(os.path.dirname(p), exist_ok=True)
+            doc.save(p)
+            print(f"[DOCX Generator] Successfully generated: {p}")
+        except Exception as e:
+            print(f"[DOCX Generator] Warning saving to {p}: {e}")
 
 if __name__ == "__main__":
     create_synopsis_word_document()

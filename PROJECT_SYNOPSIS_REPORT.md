@@ -8,7 +8,7 @@
 | :--- | :--- |
 | **AI / ML Techniques** | YOLOv5 Object Detection, Adaptive Centroid Tracking, Dynamic Back-Edge Corridor (Anti-Cut AI), On-Chip TinyML Decision Trees, PCU Wait-Time Estimation, and Random Forest/SVM Sensor Baseline |
 | **IoT Hardware Used** | ESP32 DevKit V1 (38-pin), HC-SR04 Ultrasonic Distance Sensor, 1kΩ + 2kΩ Voltage Divider, Solderless Breadboard, Jumper Wires, Micro-USB Cable, Laptop HD Camera |
-| **Team Members** | **Anurag Kumar** — 2510003151<br>**Suraj Mandal** — 2510003166<br>**Ayush** — 2510003161<br>**Divine Diamond** — 2510003176 |
+| **Team Members & Roles** | **Anurag Kumar** (2510003151) — *Team Leader & System Architect*<br>**Suraj Mandal** (2510003166) — *Embedded Systems & IoT Hardware Lead*<br>**Ayush** (2510003161) — *Computer Vision & Deep Learning Lead*<br>**Divine Diamond** (2510003176) — *Software Engineering & UI/ANPR Lead* |
 | **Project Mentor** | Baljinder Kaur |
 | **Department** | CSE-Apex |
 | **Academic Year** | 2026–27 |
@@ -126,7 +126,18 @@ The proposed system contains four integrated layers:
 
 ---
 
-### 10. References
+### 10. Team Roles & Contribution Matrix
+
+| Team Member | University ID | Assigned Role | Core Responsibilities & Contributions |
+| :--- | :--- | :--- | :--- |
+| **Anurag Kumar** | 2510003151 | **Team Leader & System Architect** | Overall project lifecycle management, system pipeline architecture, dynamic back-edge corridor algorithm formulation, and hardware-software integration testing. |
+| **Suraj Mandal** | 2510003166 | **Embedded Systems & IoT Hardware Lead** | ESP32 DevKit V1 circuit schematic & breadboard assembly, HC-SR04 ultrasonic sensor voltage divider design, on-chip C++ TinyML Decision Tree compilation, and serial UART telemetry bridge. |
+| **Ayush** | 2510003161 | **Computer Vision & Deep Learning Lead** | YOLOv5 nano ONNX model integration via OpenCV DNN, high-speed multi-scale template matching optimization, adaptive centroid tracker tuning, and ambulance emergency recognition. |
+| **Divine Diamond** | 2510003176 | **Software Engineering & UI/ANPR Lead** | Real-time Streamlit operator command dashboard design, Automated Number Plate Recognition (ANPR) plate reader engine, FASTag class mismatch auditing, and automated e-Challan evidence logging. |
+
+---
+
+### 11. References
 1. L. Breiman, "Random Forests," *Machine Learning*, vol. 45, no. 1, pp. 5–32, 2001.
 2. C. Cortes and V. Vapnik, "Support-Vector Networks," *Machine Learning*, vol. 20, pp. 273–297, 1995.
 3. J. Redmon et al., "You Only Look Once: Unified, Real-Time Object Detection," *IEEE CVPR*, 2016.

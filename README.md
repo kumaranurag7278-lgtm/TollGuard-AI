@@ -196,8 +196,8 @@ python simulate_demo.py
 
 ---
 
-## 👨‍💻 Built By
-- **Anurag Kumar**
-- **Suraj Mandal**
-- **Ayush**
-- **Divine Diamond**
+## 👨‍💻 Team & Roles
+- **Anurag Kumar** (2510003151) — *Team Leader & System Architect*
+- **Suraj Mandal** (2510003166) — *Embedded Systems & IoT Hardware Lead*
+- **Ayush** (2510003161) — *Computer Vision & Deep Learning Lead*
+- **Divine Diamond** (2510003176) — *Software Engineering & UI/ANPR Lead*

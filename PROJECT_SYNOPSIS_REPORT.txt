@@ -16,11 +16,11 @@ IoT Hardware Used:
 ESP32 DevKit V1 (38-pin), HC-SR04 Ultrasonic Distance Sensor, 1kΩ + 2kΩ Resistor 
 Voltage Divider, Solderless Breadboard, Jumper Wires, Micro-USB Cable, Laptop HD Camera.
 
-Team Members:
-- Anurag Kumar — 2510003151
-- Suraj Mandal — 2510003166
-- Ayush — 2510003161
-- Divine Diamond — 2510003176
+Team Members & Roles:
+- Anurag Kumar (2510003151) — Team Leader & System Architect
+- Suraj Mandal (2510003166) — Embedded Systems & IoT Hardware Lead
+- Ayush (2510003161) — Computer Vision & Deep Learning Lead
+- Divine Diamond (2510003176) — Software Engineering & UI/ANPR Lead
 
 Project Mentor: Baljinder Kaur
 Department: CSE-Apex
@@ -177,7 +177,30 @@ Applications:
 - College Examination & Fee Registration Counters
 
 --------------------------------------------------------------------------------
-10. REFERENCES
+10. TEAM ROLES & CONTRIBUTION MATRIX
+--------------------------------------------------------------------------------
+1. Anurag Kumar (2510003151) — Team Leader & System Architect
+   - Overall project lifecycle management & pipeline architecture.
+   - Dynamic Back-Edge Corridor & Anti-Cut Violation Engine design.
+   - Hardware-software sensor fusion testing & live demonstration lead.
+
+2. Suraj Mandal (2510003166) — Embedded Systems & IoT Hardware Lead
+   - ESP32 DevKit V1 circuit schematic & hardware breadboard assembly.
+   - HC-SR04 ultrasonic sensor voltage divider design (5V to 3.3V safe logic).
+   - On-chip C++ TinyML Decision Tree compilation and serial UART telemetry bridge.
+
+3. Ayush (2510003161) — Computer Vision & Deep Learning Lead
+   - YOLOv5 nano ONNX model integration via OpenCV DNN.
+   - High-speed 0.25x multi-scale template matching optimization.
+   - Adaptive Centroid Tracking & emergency ambulance recognition algorithms.
+
+4. Divine Diamond (2510003176) — Software Engineering & UI/ANPR Lead
+   - Real-time Streamlit operator command dashboard design.
+   - Automated Number Plate Recognition (ANPR) plate reader engine.
+   - FASTag class mismatch auditing & automated e-Challan evidence logging.
+
+--------------------------------------------------------------------------------
+11. REFERENCES
 --------------------------------------------------------------------------------
 [1] L. Breiman, "Random Forests," Machine Learning, vol. 45, no. 1, pp. 5–32, 2001.
 [2] C. Cortes and V. Vapnik, "Support-Vector Networks," Machine Learning, vol. 20, pp. 273–297, 1995.
