@@ -7,6 +7,13 @@ import os
 DEFAULT_MODE = "vehicle"
 
 # ==========================================
+# CAMERA SOURCE CONFIGURATION
+# ==========================================
+# 0 = Default built-in laptop webcam
+CAMERA_SOURCE = "http://10.200.3.0:8080/video"
+CAMERA_FLIP_180 = True   # Enabled for 3D model gantry inverted phone mount
+
+# ==========================================
 # CLEARANCE / SERVICE TIME WEIGHTS (SECONDS)
 # ==========================================
 # Based on Passenger Car Unit (PCU) equivalents in transportation engineering
@@ -41,8 +48,7 @@ MAX_MISSED_FRAMES = 25
 # DYNAMIC CORRIDOR & VIOLATION PARAMETERS
 # ==========================================
 # Minimum active objects required before violation detection turns ON
-# (Low-occupancy safety guard: avoids false alarms when queue is sparse)
-MIN_OBJECTS_FOR_ENFORCEMENT = 3
+MIN_OBJECTS_FOR_ENFORCEMENT = 1
 
 # Pixel tolerance around the dynamic back-edge to qualify as legitimate queue entry
 BACK_EDGE_TOLERANCE_PX = 85
@@ -52,8 +58,8 @@ BACK_EDGE_TOLERANCE_PX = 85
 SERVICE_BARRIER_Y_RATIO = 0.20   # Top 20% is the service / boom-barrier zone
 
 # Default lateral corridor boundaries (normalized X coordinates 0.0 - 1.0)
-DEFAULT_CORRIDOR_X_MIN = 0.20
-DEFAULT_CORRIDOR_X_MAX = 0.80
+DEFAULT_CORRIDOR_X_MIN = 0.25
+DEFAULT_CORRIDOR_X_MAX = 0.75
 
 # ==========================================
 # SENSOR INTEGRATION (ESP32)

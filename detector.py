@@ -24,19 +24,24 @@ class ObjectDetector:
     ]
     
     MODE_TARGETS = {
-        "vehicle": ["car", "bus", "truck", "motorcycle", "mouse", "suitcase"],
+        "vehicle": ["car", "bus", "truck", "motorcycle", "mouse", "suitcase", "cell phone", "remote", "boat", "toaster", "sports ball"],
         "people": ["person"]
     }
     
-    # Tabletop miniature proxy mapping (small toy cars seen from above can resemble these COCO shapes)
+    # Tabletop miniature proxy mapping (small toy cars seen from above resemble these COCO shapes)
     TABLETOP_VEHICLE_REMAP = {
         "mouse": "car",
-        "suitcase": "truck"
+        "suitcase": "truck",
+        "cell phone": "car",
+        "remote": "car",
+        "boat": "car",
+        "toaster": "truck",
+        "sports ball": "car"
     }
     
     ONNX_URL = "https://github.com/ultralytics/yolov5/releases/download/v7.0/yolov5n.onnx"
 
-    def __init__(self, mode="vehicle", conf_threshold=0.25, nms_threshold=0.45):
+    def __init__(self, mode="vehicle", conf_threshold=0.08, nms_threshold=0.55):
         self.mode = mode
         self.conf_threshold = conf_threshold
         self.nms_threshold = nms_threshold
@@ -65,10 +70,8 @@ class ObjectDetector:
     def check_emergency_ambulance(self, crop):
         """
         Differentiates an Ambulance from a normal white car.
-        Looks for:
-          1. Predominantly light / white vehicle body.
-          2. Red Cross '+' emblem, red emergency stripe or beacon.
-        Normal white passenger cars have virtually 0% red (or tiny taillights) and stay classified as 'car'.
+        Requires a distinct symmetrical Red Cross '+' emblem on a predominantly white body.
+        Toy cars with roof stripes or decals stay classified as 'car'.
         """
         if crop is None or crop.size == 0:
             return False
@@ -79,24 +82,25 @@ class ObjectDetector:
         hsv = cv2.cvtColor(crop, cv2.COLOR_BGR2HSV)
         
         # 1. White / light body ratio
-        white_mask = (hsv[:, :, 1] < 75) & (hsv[:, :, 2] > 110)
+        white_mask = (hsv[:, :, 1] < 70) & (hsv[:, :, 2] > 120)
         white_ratio = np.sum(white_mask) / (ch * cw)
 
         # 2. Red emergency markings / cross (Hue 0-12 or 165-180)
-        mask_r1 = cv2.inRange(hsv, np.array([0, 80, 80]), np.array([12, 255, 255]))
-        mask_r2 = cv2.inRange(hsv, np.array([165, 80, 80]), np.array([180, 255, 255]))
+        mask_r1 = cv2.inRange(hsv, np.array([0, 85, 85]), np.array([12, 255, 255]))
+        mask_r2 = cv2.inRange(hsv, np.array([165, 85, 85]), np.array([180, 255, 255]))
         red_mask = mask_r1 | mask_r2
         red_ratio = np.sum(red_mask > 0) / (ch * cw)
 
-        # White body with distinct red insignia (between 1.2% and 35% red surface area)
-        if white_ratio > 0.20 and (0.012 <= red_ratio <= 0.35):
+        # White body with distinct red cross insignia
+        if white_ratio > 0.25 and (0.015 <= red_ratio <= 0.25):
             contours, _ = cv2.findContours(red_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
             for cnt in contours:
                 _, _, rw, rh = cv2.boundingRect(cnt)
                 aspect = float(rw) / max(1, rh)
                 area = cv2.contourArea(cnt)
-                # Red cross '+' or emergency insignia has balanced aspect ratio
-                if area > (ch * cw * 0.006) and (0.40 <= aspect <= 2.5):
+                # Red cross '+' insignia has balanced, nearly square aspect ratio (0.70 - 1.45)
+                # Stripes are elongated and fail this check
+                if area > (ch * cw * 0.012) and (0.70 <= aspect <= 1.45):
                     return True
         return False
 

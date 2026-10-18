@@ -136,11 +136,15 @@ def draw_visual_overlays(frame, active_objects, corridor_status, wait_seconds, b
                     (15, min(h - 10, back_edge_y + 18)),
                     cv2.FONT_HERSHEY_SIMPLEX, 0.45, (0, 165, 255), 1)
 
-    # 3. Lateral Corridor Guidelines
+    # 3. Lateral Corridor Guidelines (Designated Lane)
     x_min = int(w * config.DEFAULT_CORRIDOR_X_MIN)
     x_max = int(w * config.DEFAULT_CORRIDOR_X_MAX)
-    cv2.line(annotated, (x_min, 0), (x_min, h), (255, 150, 0), 1)
-    cv2.line(annotated, (x_max, 0), (x_max, h), (255, 150, 0), 1)
+    cv2.line(annotated, (x_min, 0), (x_min, h), (0, 215, 255), 2)
+    cv2.putText(annotated, "<-- LEFT LANE BOUNDARY", (x_min + 6, h - 15),
+                cv2.FONT_HERSHEY_SIMPLEX, 0.45, (0, 215, 255), 1)
+    cv2.line(annotated, (x_max, 0), (x_max, h), (0, 215, 255), 2)
+    cv2.putText(annotated, "RIGHT LANE BOUNDARY -->", (x_max - 210, h - 15),
+                cv2.FONT_HERSHEY_SIMPLEX, 0.45, (0, 215, 255), 1)
 
     # 4. Tracked Objects
     for obj in active_objects.values():
@@ -153,7 +157,14 @@ def draw_visual_overlays(frame, active_objects, corridor_status, wait_seconds, b
             label = f"[!] AMBULANCE #{obj.token_number}{plate_str}"
         elif obj.is_violator:
             box_color = (0, 0, 255)
-            label = f"[!] CUTTER #{obj.token_number}{plate_str} ({obj.class_name.upper()})"
+            reason = getattr(obj, "violation_reason", "OFF-LANE")
+            if "Off-Lane" in reason:
+                tag = "OFF-LANE BREACH"
+            elif "Cutting" in reason:
+                tag = "LANE CUTTER"
+            else:
+                tag = "VIOLATION"
+            label = f"[!] {tag} #{obj.token_number}{plate_str}"
         else:
             box_color = (0, 255, 0)
             label = f"#{obj.token_number} {obj.class_name}{plate_str}"
@@ -176,8 +187,8 @@ def draw_visual_overlays(frame, active_objects, corridor_status, wait_seconds, b
 
     wait_min = wait_seconds // 60
     wait_sec = wait_seconds % 60
-    status_text = "ENFORCING" if corridor_status.get("corridor_active") else "STANDBY (<3 in queue)"
-    status_color = (0, 255, 0) if corridor_status.get("corridor_active") else (0, 200, 255)
+    status_text = "ENFORCING (LANE & QUEUE ACTIVE)"
+    status_color = (0, 255, 0)
     breakdown_str = ", ".join([f"{k}: {v}" for k, v in breakdown.items()]) if breakdown else "Queue Empty"
     
     cv2.putText(annotated, f"QUEUE MONITOR [{mode.upper()}] | Status: {status_text}", 
@@ -213,15 +224,34 @@ def run_pipeline(source=0, mode="people", show_window=False):
         while True:
             start_t = time.time()
 
+            frame = None
             if cap is not None and cap.isOpened():
                 ret, frame = cap.read()
                 if not ret:
-                    break
-            else:
+                    print("[QueueCamera] Stream packet drop. Attempting reconnect...")
+                    cap.release()
+                    cap = None
+                    frame = None
+
+            if frame is None:
+                time.sleep(0.3)
+                try:
+                    cap = cv2.VideoCapture(source)
+                    if cap.isOpened():
+                        ret, test_frame = cap.read()
+                        if ret:
+                            frame = test_frame
+                except Exception:
+                    cap = None
+
+            if frame is None:
                 frame = np.zeros((480, 640, 3), dtype=np.uint8)
                 frame[:] = (35, 35, 35)
-                cv2.putText(frame, "Awaiting Camera Feed...", (180, 240),
+                cv2.putText(frame, "Reconnecting Camera Stream...", (160, 240),
                             cv2.FONT_HERSHEY_SIMPLEX, 0.6, (180, 180, 180), 1)
+            else:
+                if getattr(config, "CAMERA_FLIP_180", False):
+                    frame = cv2.rotate(frame, cv2.ROTATE_180)
 
             # 1. Detection
             detections = detector.detect(frame)
@@ -315,7 +345,10 @@ def run_pipeline(source=0, mode="people", show_window=False):
         cv2.destroyAllWindows()
 
 if __name__ == "__main__":
-    mode_arg = sys.argv[1] if len(sys.argv) > 1 else "people"
-    src_arg = int(sys.argv[2]) if len(sys.argv) > 2 and sys.argv[2].isdigit() else 0
+    mode_arg = sys.argv[1] if len(sys.argv) > 1 else getattr(config, "DEFAULT_MODE", "vehicle")
+    if len(sys.argv) > 2:
+        src_arg = int(sys.argv[2]) if sys.argv[2].isdigit() else sys.argv[2]
+    else:
+        src_arg = getattr(config, "CAMERA_SOURCE", 0)
     show_win = "--show-window" in sys.argv
     run_pipeline(source=src_arg, mode=mode_arg, show_window=show_win)

@@ -149,10 +149,36 @@ class DynamicCorridorEngine:
                     if other.token_number < obj.token_number and other.centroid[1] > (y_first + config.BACK_EDGE_TOLERANCE_PX)
                 ]
 
-                if len(deeper_objects) >= 2:
-                    # Clear cut: At least 2 legitimate vehicles/people were behind this insertion point
+                if len(deeper_objects) >= 1:
+                    # Clear cut: Legitimate vehicle was behind this insertion point
                     obj.is_violator = True
                     obj.violation_reason = "Mid-Corridor Lane Cutting"
+                    snapshot_file = self.capture_evidence_snapshot(current_frame, obj, obj.violation_reason)
+                    obj.evidence_snapshot = snapshot_file
+
+                    violation_record = {
+                        "id": obj.token_number,
+                        "class_name": obj.class_name,
+                        "license_plate": getattr(obj, "license_plate", "N/A"),
+                        "plate_snapshot": getattr(obj, "plate_snapshot", None),
+                        "plate_type": getattr(obj, "plate_type", "PRIVATE (WHITE)"),
+                        "violation_type": obj.violation_reason,
+                        "timestamp": now_str,
+                        "penalty_inr": config.VIOLATION_PENALTY,
+                        "status": "UNPAID",
+                        "snapshot": snapshot_file
+                    }
+                    self._save_violation_entry(violation_record)
+                    violations_this_frame.append(violation_record)
+
+            # Check 2: Lateral Lane Corridor Breach (Vehicle Outside Designated Lane Lines)
+            lane_x_min = int(w * config.DEFAULT_CORRIDOR_X_MIN)
+            lane_x_max = int(w * config.DEFAULT_CORRIDOR_X_MAX)
+            cX, cY = obj.centroid
+            if not obj.is_violator:
+                if cX < lane_x_min or cX > lane_x_max:
+                    obj.is_violator = True
+                    obj.violation_reason = "Off-Lane Breach (Outside Lane Corridor)"
                     snapshot_file = self.capture_evidence_snapshot(current_frame, obj, obj.violation_reason)
                     obj.evidence_snapshot = snapshot_file
 

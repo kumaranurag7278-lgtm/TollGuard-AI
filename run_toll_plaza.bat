@@ -4,7 +4,7 @@ title AI Toll Plaza & ANPR Enforcement System
 echo ============================================================
 echo Starting AI Camera Engine in VEHICLE mode with ANPR...
 echo ============================================================
-start /B python queue_camera.py vehicle 0
+start /B python queue_camera.py vehicle
 echo ============================================================
 echo Starting Unified Streamlit Dashboard...
 echo ============================================================
