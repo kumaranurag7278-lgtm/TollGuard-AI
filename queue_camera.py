@@ -335,7 +335,7 @@ def run_pipeline(source=0, mode="people", show_window=False):
                 if cv2.waitKey(1) & 0xFF == ord('q'):
                     break
 
-            time.sleep(0.033)
+            time.sleep(0.001)
 
     except KeyboardInterrupt:
         pass

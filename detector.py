@@ -42,7 +42,7 @@ class ObjectDetector:
     
     ONNX_URL = "https://github.com/ultralytics/yolov5/releases/download/v7.0/yolov5n.onnx"
 
-    def __init__(self, mode="vehicle", conf_threshold=0.06, nms_threshold=0.55):
+    def __init__(self, mode="vehicle", conf_threshold=0.10, nms_threshold=0.55):
         self.mode = mode
         self.conf_threshold = conf_threshold
         self.nms_threshold = nms_threshold
@@ -57,12 +57,17 @@ class ObjectDetector:
             "car_top_green.jpg", "car_mid_green.jpg", "car_bot_blue.jpg", "car_right_side.jpg",
             "car_green.jpg", "car_blue.jpg", "car_striped.jpg", "car_blackred.jpg"
         ]
+        self.cached_small_templates = []
         for name in template_files:
             path = os.path.join(config.BASE_DIR, name)
             if os.path.exists(path):
                 t = cv2.imread(path)
                 if t is not None:
                     self.templates.append((name, t))
+                    if len(self.cached_small_templates) < 4:
+                        sth, stw = int(t.shape[0] * 0.25), int(t.shape[1] * 0.25)
+                        st = cv2.resize(t, (stw, sth))
+                        self.cached_small_templates.append((name, st, t.shape))
         if self.templates:
             print(f"[Detector] Loaded {len(self.templates)} verified physical toy car signatures into memory!")
 
@@ -205,30 +210,29 @@ class ObjectDetector:
                     "centroid": (cX, cY)
                 })
 
-        # Multi-scale template verification for user's specific toy cars
-        if self.mode == "vehicle" and hasattr(self, "templates") and self.templates:
-            for tname, templ in self.templates:
-                th, tw = templ.shape[:2]
-                best_val = -1
-                best_box = None
-                # Check multi-scale
-                for scale in [0.75, 0.90, 1.0, 1.10, 1.25]:
-                    stw = int(tw * scale)
-                    sth = int(th * scale)
-                    if stw >= w or sth >= h:
-                        continue
-                    scaled_t = cv2.resize(templ, (stw, sth))
-                    res = cv2.matchTemplate(frame, scaled_t, cv2.TM_CCOEFF_NORMED)
-                    _, max_val, _, max_loc = cv2.minMaxLoc(res)
-                    if max_val > best_val:
-                        best_val = max_val
-                        best_box = (max_loc[0], max_loc[1], max_loc[0] + stw, max_loc[1] + sth)
+        # Blazing-fast template verification for user's physical toy cars (optimized at 0.25x scale)
+        if self.mode == "vehicle" and hasattr(self, "cached_small_templates") and self.cached_small_templates:
+            scale_factor = 0.25
+            small_frame = cv2.resize(frame, (int(w * scale_factor), int(h * scale_factor)))
+            sw, sh = small_frame.shape[1], small_frame.shape[0]
 
-                # High-confidence template match (> 0.65)
-                if best_val >= 0.65 and best_box is not None:
-                    bx1, by1, bx2, by2 = best_box
+            for tname, small_t, orig_shape in self.cached_small_templates:
+                sth, stw = small_t.shape[:2]
+                if stw >= sw or sth >= sh:
+                    continue
+                res = cv2.matchTemplate(small_frame, small_t, cv2.TM_CCOEFF_NORMED)
+                _, max_val, _, max_loc = cv2.minMaxLoc(res)
+
+                # High-confidence template match (> 0.58)
+                if max_val >= 0.58:
+                    inv_s = 1.0 / scale_factor
+                    bx1 = int(max_loc[0] * inv_s)
+                    by1 = int(max_loc[1] * inv_s)
+                    bx2 = bx1 + orig_shape[1]
+                    by2 = by1 + orig_shape[0]
                     bcX = int((bx1 + bx2) / 2.0)
                     bcY = int((by1 + by2) / 2.0)
+                    best_box = (bx1, by1, bx2, by2)
                     
                     # Clean deduplication with existing detections (suppress if centroid < 160 px)
                     already_covered = False
@@ -241,13 +245,13 @@ class ObjectDetector:
                             r["box"] = best_box
                             r["centroid"] = (bcX, bcY)
                             r["class_name"] = "car"
-                            r["confidence"] = max(r["confidence"], float(best_val))
+                            r["confidence"] = max(r["confidence"], float(max_val))
                             break
 
                     if not already_covered:
                         results.append({
                             "class_name": "car",
-                            "confidence": float(best_val),
+                            "confidence": float(max_val),
                             "box": best_box,
                             "centroid": (bcX, bcY)
                         })
