@@ -24,7 +24,7 @@ class ObjectDetector:
     ]
     
     MODE_TARGETS = {
-        "vehicle": ["car", "bus", "truck", "motorcycle", "mouse", "suitcase", "cell phone", "remote", "boat", "toaster", "sports ball"],
+        "vehicle": ["car", "bus", "truck", "motorcycle", "mouse", "suitcase", "cell phone", "remote", "boat", "toaster", "sports ball", "bottle"],
         "people": ["person"]
     }
     
@@ -36,18 +36,35 @@ class ObjectDetector:
         "remote": "car",
         "boat": "car",
         "toaster": "truck",
-        "sports ball": "car"
+        "sports ball": "car",
+        "bottle": "car"
     }
     
     ONNX_URL = "https://github.com/ultralytics/yolov5/releases/download/v7.0/yolov5n.onnx"
 
-    def __init__(self, mode="vehicle", conf_threshold=0.08, nms_threshold=0.55):
+    def __init__(self, mode="vehicle", conf_threshold=0.06, nms_threshold=0.55):
         self.mode = mode
         self.conf_threshold = conf_threshold
         self.nms_threshold = nms_threshold
         self.model_path = os.path.join(config.MODELS_DIR, "yolov5n.onnx")
         self.net = None
         self._initialize_model()
+        self._load_car_templates()
+
+    def _load_car_templates(self):
+        self.templates = []
+        template_files = [
+            "car_top_green.jpg", "car_mid_green.jpg", "car_bot_blue.jpg", "car_right_side.jpg",
+            "car_green.jpg", "car_blue.jpg", "car_striped.jpg", "car_blackred.jpg"
+        ]
+        for name in template_files:
+            path = os.path.join(config.BASE_DIR, name)
+            if os.path.exists(path):
+                t = cv2.imread(path)
+                if t is not None:
+                    self.templates.append((name, t))
+        if self.templates:
+            print(f"[Detector] Loaded {len(self.templates)} verified physical toy car signatures into memory!")
 
     def _initialize_model(self):
         if not os.path.exists(self.model_path):
@@ -187,5 +204,52 @@ class ObjectDetector:
                     "box": (startX, startY, endX, endY),
                     "centroid": (cX, cY)
                 })
+
+        # Multi-scale template verification for user's specific toy cars
+        if self.mode == "vehicle" and hasattr(self, "templates") and self.templates:
+            for tname, templ in self.templates:
+                th, tw = templ.shape[:2]
+                best_val = -1
+                best_box = None
+                # Check multi-scale
+                for scale in [0.75, 0.90, 1.0, 1.10, 1.25]:
+                    stw = int(tw * scale)
+                    sth = int(th * scale)
+                    if stw >= w or sth >= h:
+                        continue
+                    scaled_t = cv2.resize(templ, (stw, sth))
+                    res = cv2.matchTemplate(frame, scaled_t, cv2.TM_CCOEFF_NORMED)
+                    _, max_val, _, max_loc = cv2.minMaxLoc(res)
+                    if max_val > best_val:
+                        best_val = max_val
+                        best_box = (max_loc[0], max_loc[1], max_loc[0] + stw, max_loc[1] + sth)
+
+                # High-confidence template match (> 0.65)
+                if best_val >= 0.65 and best_box is not None:
+                    bx1, by1, bx2, by2 = best_box
+                    bcX = int((bx1 + bx2) / 2.0)
+                    bcY = int((by1 + by2) / 2.0)
+                    
+                    # Clean deduplication with existing detections (suppress if centroid < 160 px)
+                    already_covered = False
+                    for r in results:
+                        rcX, rcY = r["centroid"]
+                        dist = ((bcX - rcX)**2 + (bcY - rcY)**2)**0.5
+                        if dist < 160:
+                            already_covered = True
+                            # Upgrade box to the precise template box
+                            r["box"] = best_box
+                            r["centroid"] = (bcX, bcY)
+                            r["class_name"] = "car"
+                            r["confidence"] = max(r["confidence"], float(best_val))
+                            break
+
+                    if not already_covered:
+                        results.append({
+                            "class_name": "car",
+                            "confidence": float(best_val),
+                            "box": best_box,
+                            "centroid": (bcX, bcY)
+                        })
 
         return results

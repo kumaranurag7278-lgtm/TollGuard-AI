@@ -58,8 +58,9 @@ BACK_EDGE_TOLERANCE_PX = 85
 SERVICE_BARRIER_Y_RATIO = 0.20   # Top 20% is the service / boom-barrier zone
 
 # Default lateral corridor boundaries (normalized X coordinates 0.0 - 1.0)
-DEFAULT_CORRIDOR_X_MIN = 0.25
-DEFAULT_CORRIDOR_X_MAX = 0.75
+# Calibrated for user tabletop lane: Center lane is 0.35 to 0.68. Right side (>0.68) is Off-Lane!
+DEFAULT_CORRIDOR_X_MIN = 0.35
+DEFAULT_CORRIDOR_X_MAX = 0.68
 
 # ==========================================
 # SENSOR INTEGRATION (ESP32)

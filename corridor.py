@@ -197,41 +197,6 @@ class DynamicCorridorEngine:
                     self._save_violation_entry(violation_record)
                     violations_this_frame.append(violation_record)
 
-            # Check 2: Out-of-Sequence Counter Arrival
-            # Flag if an entity arrives in the barrier service zone while an older token is still waiting behind
-            cX, cY = obj.centroid
-            if cY <= barrier_y and not obj.has_reached_barrier:
-                obj.has_reached_barrier = True
-                
-                # Check if any earlier token is still unserved and positioned behind in the queue
-                unserved_precedents = [
-                    other for other in active_objects.values()
-                    if other.token_number < obj.token_number 
-                    and not other.has_reached_barrier 
-                    and other.centroid[1] > barrier_y
-                ]
-
-                if len(unserved_precedents) > 0 and not obj.is_violator:
-                    obj.is_violator = True
-                    obj.violation_reason = f"Out-of-Order Queue Bypass (Bypassed Token #{unserved_precedents[0].token_number})"
-                    snapshot_file = self.capture_evidence_snapshot(current_frame, obj, "Sequence Bypass")
-                    obj.evidence_snapshot = snapshot_file
-
-                    violation_record = {
-                        "id": obj.token_number,
-                        "class_name": obj.class_name,
-                        "license_plate": getattr(obj, "license_plate", "N/A"),
-                        "plate_snapshot": getattr(obj, "plate_snapshot", None),
-                        "plate_type": getattr(obj, "plate_type", "PRIVATE (WHITE)"),
-                        "violation_type": obj.violation_reason,
-                        "timestamp": now_str,
-                        "penalty_inr": config.VIOLATION_PENALTY,
-                        "status": "UNPAID",
-                        "snapshot": snapshot_file
-                    }
-                    self._save_violation_entry(violation_record)
-                    violations_this_frame.append(violation_record)
-
         return {
             "dynamic_back_edge_y": dynamic_back_edge_y,
             "corridor_active": True,
