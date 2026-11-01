@@ -130,6 +130,45 @@ with st.sidebar:
     st.info(f"Active Vision Mode: **{active_mode.upper()}**\n\n*(Change in terminal: `python queue_camera.py people` or `vehicle`)*")
 
     st.divider()
+    st.subheader("📱 Live Camera Source")
+    current_source = config.get_active_camera_source()
+    
+    # Strip protocol and path for user-friendly display/editing
+    disp_val = str(current_source)
+    if disp_val.startswith("http://"):
+        disp_val = disp_val.replace("http://", "")
+    if disp_val.endswith("/video"):
+        disp_val = disp_val[:-6]
+        
+    cam_ip_input = st.text_input(
+        "Phone IP or Camera Index",
+        value=disp_val,
+        placeholder="e.g. 10.200.1.248:8080 or 0",
+        help="Type IP:Port from your phone IP Webcam screen (e.g. 10.200.1.248:8080) or 0 for built-in webcam"
+    )
+    
+    btn_col1, btn_col2 = st.columns([1, 1])
+    with btn_col1:
+        connect_pressed = st.button("🔗 Connect", use_container_width=True, type="primary")
+    with btn_col2:
+        laptop_cam_pressed = st.button("💻 Laptop Cam", use_container_width=True)
+        
+    if laptop_cam_pressed:
+        config.set_active_camera_source("0")
+        st.toast("Switched to Laptop Webcam (Index 0)")
+        st.rerun()
+
+    if connect_pressed or (cam_ip_input and cam_ip_input != disp_val):
+        formatted_url = config.set_active_camera_source(cam_ip_input)
+        st.toast(f"Connecting to: {formatted_url}")
+        st.rerun()
+
+    if str(current_source) == "0":
+        st.caption("💻 **Active:** Local USB / Laptop Webcam")
+    else:
+        st.caption(f"📡 **Active Stream:** `{current_source}`")
+
+    st.divider()
     st.subheader("Physical Hardware (ESP32)")
     esp_conn = state.get("esp32_connected", False)
     if esp_conn:
@@ -192,7 +231,7 @@ with col_video:
     </div>
     """
     st.markdown(mjpeg_html, unsafe_allow_html=True)
-    st.caption(f"YOLOv5 Nano + Adaptive Centroid Tracking + ANPR License Plate Recognition ({active_mode.upper()} Mode)")
+    st.caption(f"YOLOv5 Nano + Adaptive Centroid Tracking + ANPR Recognition ({active_mode.upper()} Mode) | 📡 Feed: `{config.get_active_camera_source()}`")
 
 with col_hardware:
     st.subheader("📡 Live ESP32 Hardware & Toll Barrier HUD")

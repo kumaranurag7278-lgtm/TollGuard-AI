@@ -1,4 +1,8 @@
 import os
+import json
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+CAMERA_CONFIG_FILE = os.path.join(BASE_DIR, "camera_config.json")
 
 # ==========================================
 # SYSTEM OPERATING MODE
@@ -9,8 +13,44 @@ DEFAULT_MODE = "vehicle"
 # ==========================================
 # CAMERA SOURCE CONFIGURATION
 # ==========================================
-# 0 = Default built-in laptop webcam
-CAMERA_SOURCE = "http://10.200.1.248:8080/video"
+# Default fallback IP or 0 for built-in laptop webcam
+DEFAULT_CAMERA_SOURCE = "http://10.200.1.248:8080/video"
+
+def format_camera_source(raw_input):
+    """Sanitizes user input into a valid OpenCV camera source URL or integer index."""
+    if raw_input is None:
+        return DEFAULT_CAMERA_SOURCE
+    cleaned = str(raw_input).strip()
+    if cleaned.isdigit():
+        return int(cleaned)
+    if not (cleaned.startswith("http://") or cleaned.startswith("https://") or cleaned.startswith("rtsp://")):
+        cleaned = "http://" + cleaned
+    if (":8080" in cleaned or ":4747" in cleaned) and not cleaned.endswith("/video"):
+        cleaned = cleaned.rstrip("/") + "/video"
+    return cleaned
+
+def get_active_camera_source():
+    """Returns the dynamically configured camera source if set, otherwise default."""
+    if os.path.exists(CAMERA_CONFIG_FILE):
+        try:
+            with open(CAMERA_CONFIG_FILE, "r") as f:
+                data = json.load(f)
+                return format_camera_source(data.get("camera_source", DEFAULT_CAMERA_SOURCE))
+        except Exception:
+            pass
+    return format_camera_source(DEFAULT_CAMERA_SOURCE)
+
+def set_active_camera_source(new_source):
+    """Saves dynamic camera source to camera_config.json."""
+    formatted = format_camera_source(new_source)
+    try:
+        with open(CAMERA_CONFIG_FILE, "w") as f:
+            json.dump({"camera_source": formatted}, f, indent=2)
+    except Exception:
+        pass
+    return formatted
+
+CAMERA_SOURCE = get_active_camera_source()
 CAMERA_FLIP_180 = True   # Enabled for 3D model gantry inverted phone mount
 
 # ==========================================

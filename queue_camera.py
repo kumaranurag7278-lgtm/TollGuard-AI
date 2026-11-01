@@ -199,9 +199,10 @@ def draw_visual_overlays(frame, active_objects, corridor_status, wait_seconds, b
     return annotated
 
 
-def run_pipeline(source=0, mode="people", show_window=False):
+def run_pipeline(source=None, mode="people", show_window=False):
     global latest_jpeg_bytes
-    print(f"[QueueCamera] Starting in '{mode}' mode (Camera: {source})...")
+    active_source = config.get_active_camera_source() if source is None else source
+    print(f"[QueueCamera] Starting in '{mode}' mode (Camera: {active_source})...")
     
     # Start MJPEG streaming server in background
     stream_thread = threading.Thread(target=start_mjpeg_server, args=(5001,), daemon=True)
@@ -215,14 +216,31 @@ def run_pipeline(source=0, mode="people", show_window=False):
     tracker = AdaptiveCentroidTracker()
     corridor_engine = DynamicCorridorEngine()
 
-    cap = cv2.VideoCapture(source)
+    cap = cv2.VideoCapture(active_source)
     if not cap.isOpened():
-        print(f"[QueueCamera] Unable to open camera '{source}', using fallback frame.")
+        print(f"[QueueCamera] Unable to open camera '{active_source}', using fallback frame.")
         cap = None
 
+    last_source_check = 0
     try:
         while True:
             start_t = time.time()
+
+            # Dynamic camera hot-switch check (every 1 second)
+            now = time.time()
+            if now - last_source_check > 1.0:
+                last_source_check = now
+                target_source = config.get_active_camera_source()
+                if target_source != active_source:
+                    print(f"[QueueCamera] Dynamic camera switch: {active_source} -> {target_source}")
+                    if cap is not None:
+                        cap.release()
+                        cap = None
+                    active_source = target_source
+                    try:
+                        cap = cv2.VideoCapture(active_source)
+                    except Exception as e:
+                        print(f"[QueueCamera] Error connecting to {active_source}: {e}")
 
             frame = None
             if cap is not None and cap.isOpened():
@@ -236,7 +254,7 @@ def run_pipeline(source=0, mode="people", show_window=False):
             if frame is None:
                 time.sleep(0.3)
                 try:
-                    cap = cv2.VideoCapture(source)
+                    cap = cv2.VideoCapture(active_source)
                     if cap.isOpened():
                         ret, test_frame = cap.read()
                         if ret:
@@ -247,8 +265,11 @@ def run_pipeline(source=0, mode="people", show_window=False):
             if frame is None:
                 placeholder = np.zeros((480, 640, 3), dtype=np.uint8)
                 placeholder[:] = (35, 35, 35)
-                cv2.putText(placeholder, "Connecting to IP Camera Stream...", (150, 240),
-                            cv2.FONT_HERSHEY_SIMPLEX, 0.6, (180, 180, 180), 1)
+                src_disp = str(active_source)
+                if len(src_disp) > 38:
+                    src_disp = src_disp[:35] + "..."
+                cv2.putText(placeholder, f"Connecting to {src_disp}...", (80, 240),
+                            cv2.FONT_HERSHEY_SIMPLEX, 0.55, (180, 180, 180), 1)
                 ret, jpeg = cv2.imencode(".jpg", placeholder, [cv2.IMWRITE_JPEG_QUALITY, 80])
                 if ret:
                     with output_frame_lock:
@@ -355,6 +376,6 @@ if __name__ == "__main__":
     if len(sys.argv) > 2:
         src_arg = int(sys.argv[2]) if sys.argv[2].isdigit() else sys.argv[2]
     else:
-        src_arg = getattr(config, "CAMERA_SOURCE", 0)
+        src_arg = None  # Use dynamic camera source from config / dashboard
     show_win = "--show-window" in sys.argv
     run_pipeline(source=src_arg, mode=mode_arg, show_window=show_win)
