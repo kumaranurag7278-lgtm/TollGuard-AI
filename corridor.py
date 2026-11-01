@@ -135,48 +135,14 @@ class DynamicCorridorEngine:
                 obj.is_emergency = True
                 continue
 
-            # Check 1: Mid-Corridor Lateral Entry / Line Jumping
-            # Flag if the object first appeared well ahead of the dynamic back edge
-            # (i.e. first_seen Y was significantly closer to the counter than the back of the queue)
-            if not obj.is_violator and len(obj.trajectory) >= 3:
-                # If its first appearance Y coordinate was closer to barrier than the back-edge tolerance
-                # AND there were at least MIN_OBJECTS behind it when it appeared
-                y_first = obj.first_seen_centroid[1]
-                
-                # Check how many objects were already present and deeper in line
-                deeper_objects = [
-                    other for other in active_objects.values() 
-                    if other.token_number < obj.token_number and other.centroid[1] > (y_first + config.BACK_EDGE_TOLERANCE_PX)
-                ]
-
-                if len(deeper_objects) >= 1:
-                    # Clear cut: Legitimate vehicle was behind this insertion point
-                    obj.is_violator = True
-                    obj.violation_reason = "Mid-Corridor Lane Cutting"
-                    snapshot_file = self.capture_evidence_snapshot(current_frame, obj, obj.violation_reason)
-                    obj.evidence_snapshot = snapshot_file
-
-                    violation_record = {
-                        "id": obj.token_number,
-                        "class_name": obj.class_name,
-                        "license_plate": getattr(obj, "license_plate", "N/A"),
-                        "plate_snapshot": getattr(obj, "plate_snapshot", None),
-                        "plate_type": getattr(obj, "plate_type", "PRIVATE (WHITE)"),
-                        "violation_type": obj.violation_reason,
-                        "timestamp": now_str,
-                        "penalty_inr": config.VIOLATION_PENALTY,
-                        "status": "UNPAID",
-                        "snapshot": snapshot_file
-                    }
-                    self._save_violation_entry(violation_record)
-                    violations_this_frame.append(violation_record)
-
-            # Check 2: Lateral Lane Corridor Breach (Vehicle Outside Designated Lane Lines)
+            cX, cY = obj.centroid
+            first_x, first_y = obj.first_seen_centroid
             lane_x_min = int(w * config.DEFAULT_CORRIDOR_X_MIN)
             lane_x_max = int(w * config.DEFAULT_CORRIDOR_X_MAX)
-            cX, cY = obj.centroid
-            if not obj.is_violator:
-                if cX < lane_x_min or cX > lane_x_max:
+
+            # Check 1: Lateral Lane Corridor Breach (Vehicle Outside Designated Lane Lines)
+            if cX < lane_x_min or cX > lane_x_max:
+                if not obj.is_violator:
                     obj.is_violator = True
                     obj.violation_reason = "Off-Lane Breach (Outside Lane Corridor)"
                     snapshot_file = self.capture_evidence_snapshot(current_frame, obj, obj.violation_reason)
@@ -196,6 +162,40 @@ class DynamicCorridorEngine:
                     }
                     self._save_violation_entry(violation_record)
                     violations_this_frame.append(violation_record)
+            else:
+                # Vehicle is inside designated lane corridor:
+                # Check 2: Mid-Corridor Lateral Entry / Line Jumping
+                # (Only triggers if the car originated OUTSIDE the lane on the shoulder and then cut in)
+                was_outside = (first_x < lane_x_min or first_x > lane_x_max)
+                if was_outside and not obj.is_violator and len(obj.trajectory) >= 3:
+                    deeper_objects = [
+                        other for other in active_objects.values() 
+                        if other.token_number != obj.token_number and other.centroid[1] > (cY + config.BACK_EDGE_TOLERANCE_PX)
+                    ]
+                    if len(deeper_objects) >= 1:
+                        obj.is_violator = True
+                        obj.violation_reason = "Mid-Corridor Lane Cutting"
+                        snapshot_file = self.capture_evidence_snapshot(current_frame, obj, obj.violation_reason)
+                        obj.evidence_snapshot = snapshot_file
+
+                        violation_record = {
+                            "id": obj.token_number,
+                            "class_name": obj.class_name,
+                            "license_plate": getattr(obj, "license_plate", "N/A"),
+                            "plate_snapshot": getattr(obj, "plate_snapshot", None),
+                            "plate_type": getattr(obj, "plate_type", "PRIVATE (WHITE)"),
+                            "violation_type": obj.violation_reason,
+                            "timestamp": now_str,
+                            "penalty_inr": config.VIOLATION_PENALTY,
+                            "status": "UNPAID",
+                            "snapshot": snapshot_file
+                        }
+                        self._save_violation_entry(violation_record)
+                        violations_this_frame.append(violation_record)
+                elif not was_outside:
+                    # Legitimate vehicle in queue: MUST REMAIN GREEN
+                    obj.is_violator = False
+                    obj.violation_reason = None
 
         return {
             "dynamic_back_edge_y": dynamic_back_edge_y,

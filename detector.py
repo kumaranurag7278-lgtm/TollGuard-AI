@@ -54,6 +54,8 @@ class ObjectDetector:
     def _load_car_templates(self):
         self.templates = []
         template_files = [
+            "car_purple_77.jpg", "car_green_bestracing.jpg",
+            "car_blue_center.jpg", "car_offlane_race.jpg", "car_gold_top.jpg", "car_redblue_bot.jpg",
             "car_top_green.jpg", "car_mid_green.jpg", "car_bot_blue.jpg", "car_right_side.jpg",
             "car_green.jpg", "car_blue.jpg", "car_striped.jpg", "car_blackred.jpg"
         ]
@@ -64,10 +66,9 @@ class ObjectDetector:
                 t = cv2.imread(path)
                 if t is not None:
                     self.templates.append((name, t))
-                    if len(self.cached_small_templates) < 4:
-                        sth, stw = int(t.shape[0] * 0.25), int(t.shape[1] * 0.25)
-                        st = cv2.resize(t, (stw, sth))
-                        self.cached_small_templates.append((name, st, t.shape))
+                    sth, stw = int(t.shape[0] * 0.25), int(t.shape[1] * 0.25)
+                    st = cv2.resize(t, (stw, sth))
+                    self.cached_small_templates.append((name, st, t.shape))
         if self.templates:
             print(f"[Detector] Loaded {len(self.templates)} verified physical toy car signatures into memory!")
 
@@ -210,6 +211,9 @@ class ObjectDetector:
                     "centroid": (cX, cY)
                 })
 
+        # Discard oversized merged YOLO boxes (covering multiple bumper-to-bumper cars)
+        results = [r for r in results if (r["box"][3] - r["box"][1]) < 420]
+
         # Blazing-fast template verification for user's physical toy cars (optimized at 0.25x scale)
         if self.mode == "vehicle" and hasattr(self, "cached_small_templates") and self.cached_small_templates:
             scale_factor = 0.25
@@ -234,12 +238,12 @@ class ObjectDetector:
                     bcY = int((by1 + by2) / 2.0)
                     best_box = (bx1, by1, bx2, by2)
                     
-                    # Clean deduplication with existing detections (suppress if centroid < 160 px)
+                    # Clean deduplication with existing detections (suppress if centroid < 90 px)
                     already_covered = False
                     for r in results:
                         rcX, rcY = r["centroid"]
                         dist = ((bcX - rcX)**2 + (bcY - rcY)**2)**0.5
-                        if dist < 160:
+                        if dist < 90:
                             already_covered = True
                             # Upgrade box to the precise template box
                             r["box"] = best_box

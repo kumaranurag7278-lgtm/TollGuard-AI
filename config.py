@@ -10,7 +10,7 @@ DEFAULT_MODE = "vehicle"
 # CAMERA SOURCE CONFIGURATION
 # ==========================================
 # 0 = Default built-in laptop webcam
-CAMERA_SOURCE = "http://10.200.3.0:8080/video"
+CAMERA_SOURCE = "http://10.83.252.7:8080/video"
 CAMERA_FLIP_180 = True   # Enabled for 3D model gantry inverted phone mount
 
 # ==========================================
