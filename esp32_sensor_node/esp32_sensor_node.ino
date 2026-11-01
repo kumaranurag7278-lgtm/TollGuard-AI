@@ -24,8 +24,9 @@ const char* WIFI_PASSWORD = "YOUR_WIFI_PASSWORD";
 const char* WEBHOOK_URL   = "https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec";
 
 // HC-SR04 Pin Assignments: Verified Row 23 = G14 (TRIG), Row 22 = G27 (ECHO)
-const int PIN_TRIG = 14; 
-const int PIN_ECHO = 27; 
+const int PIN_TRIG   = 14; 
+const int PIN_ECHO   = 27; 
+const int PIN_BUZZER = 26; // Warning Audio Buzzer (GPIO 26 Output) 
 
 // Telemetry & Edge AI Timing
 const unsigned long SEND_INTERVAL_MS = 1000; // Measure every 1 second
@@ -47,6 +48,16 @@ void setup() {
 
   pinMode(PIN_TRIG, OUTPUT);
   pinMode(PIN_ECHO, INPUT);
+  pinMode(PIN_BUZZER, OUTPUT);
+
+  // Startup audio self-test (double chirp)
+  digitalWrite(PIN_BUZZER, HIGH);
+  delay(80);
+  digitalWrite(PIN_BUZZER, LOW);
+  delay(60);
+  digitalWrite(PIN_BUZZER, HIGH);
+  delay(80);
+  digitalWrite(PIN_BUZZER, LOW);
 
   if (ENABLE_WIFI) {
     Serial.printf("[ESP32] Connecting to Wi-Fi: %s", WIFI_SSID);
@@ -105,6 +116,16 @@ void loop() {
     // 4. Output Inference Results over Serial
     Serial.printf("[Sensor] Distance: %5.1f cm (duration: %ld us) | Rolling: %5.1f cm | TinyML AI: >>> %s <<<\n", 
                   currentDistance, lastDuration, rollingAvgDistance, stateName);
+
+    // 5. Intelligent Audio Buzzer Alert:
+    // If vehicle is in close barrier proximity (<= 12.0 cm) or STOP_BARRIER, sound intermittent alert beeps!
+    if (currentDistance <= 12.0) {
+      digitalWrite(PIN_BUZZER, HIGH);
+      delay(80);
+      digitalWrite(PIN_BUZZER, LOW);
+    } else {
+      digitalWrite(PIN_BUZZER, LOW);
+    }
   }
 
   delay(20);
