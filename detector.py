@@ -55,9 +55,8 @@ class ObjectDetector:
         self.templates = []
         template_files = [
             "car_purple_77.jpg", "car_green_bestracing.jpg",
-            "car_blue_center.jpg", "car_offlane_race.jpg", "car_gold_top.jpg", "car_redblue_bot.jpg",
-            "car_top_green.jpg", "car_mid_green.jpg", "car_bot_blue.jpg", "car_right_side.jpg",
-            "car_green.jpg", "car_blue.jpg", "car_striped.jpg", "car_blackred.jpg"
+            "car_racer_99.jpg", "car_suv_66.jpg",
+            "car_blue_center.jpg", "car_offlane_race.jpg", "car_gold_top.jpg", "car_redblue_bot.jpg"
         ]
         self.cached_small_templates = []
         for name in template_files:
@@ -227,8 +226,8 @@ class ObjectDetector:
                 res = cv2.matchTemplate(small_frame, small_t, cv2.TM_CCOEFF_NORMED)
                 _, max_val, _, max_loc = cv2.minMaxLoc(res)
 
-                # High-confidence template match (> 0.58)
-                if max_val >= 0.58:
+                # High-confidence template match (> 0.70) to prevent false ghost boxes in shadows
+                if max_val >= 0.70:
                     inv_s = 1.0 / scale_factor
                     bx1 = int(max_loc[0] * inv_s)
                     by1 = int(max_loc[1] * inv_s)
