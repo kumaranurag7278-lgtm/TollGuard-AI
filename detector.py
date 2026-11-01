@@ -237,12 +237,12 @@ class ObjectDetector:
                     bcY = int((by1 + by2) / 2.0)
                     best_box = (bx1, by1, bx2, by2)
                     
-                    # Clean deduplication with existing detections (suppress if centroid < 90 px)
+                    # Clean deduplication with existing detections (suppress if centroid < 130 px)
                     already_covered = False
                     for r in results:
                         rcX, rcY = r["centroid"]
                         dist = ((bcX - rcX)**2 + (bcY - rcY)**2)**0.5
-                        if dist < 90:
+                        if dist < 130:
                             already_covered = True
                             # Upgrade box to the precise template box
                             r["box"] = best_box

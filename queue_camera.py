@@ -245,10 +245,16 @@ def run_pipeline(source=0, mode="people", show_window=False):
                     cap = None
 
             if frame is None:
-                frame = np.zeros((480, 640, 3), dtype=np.uint8)
-                frame[:] = (35, 35, 35)
-                cv2.putText(frame, "Reconnecting Camera Stream...", (160, 240),
+                placeholder = np.zeros((480, 640, 3), dtype=np.uint8)
+                placeholder[:] = (35, 35, 35)
+                cv2.putText(placeholder, "Connecting to IP Camera Stream...", (150, 240),
                             cv2.FONT_HERSHEY_SIMPLEX, 0.6, (180, 180, 180), 1)
+                ret, jpeg = cv2.imencode(".jpg", placeholder, [cv2.IMWRITE_JPEG_QUALITY, 80])
+                if ret:
+                    with output_frame_lock:
+                        latest_jpeg_bytes = jpeg.tobytes()
+                time.sleep(0.1)
+                continue
             else:
                 if getattr(config, "CAMERA_FLIP_180", False):
                     frame = cv2.rotate(frame, cv2.ROTATE_180)

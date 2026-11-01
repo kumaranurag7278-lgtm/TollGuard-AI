@@ -10,7 +10,7 @@ DEFAULT_MODE = "vehicle"
 # CAMERA SOURCE CONFIGURATION
 # ==========================================
 # 0 = Default built-in laptop webcam
-CAMERA_SOURCE = "http://10.83.252.7:8080/video"
+CAMERA_SOURCE = "http://10.200.1.248:8080/video"
 CAMERA_FLIP_180 = True   # Enabled for 3D model gantry inverted phone mount
 
 # ==========================================
@@ -58,9 +58,9 @@ BACK_EDGE_TOLERANCE_PX = 85
 SERVICE_BARRIER_Y_RATIO = 0.20   # Top 20% is the service / boom-barrier zone
 
 # Default lateral corridor boundaries (normalized X coordinates 0.0 - 1.0)
-# Calibrated for user tabletop lane: Center lane is 0.35 to 0.68. Right side (>0.68) is Off-Lane!
-DEFAULT_CORRIDOR_X_MIN = 0.35
-DEFAULT_CORRIDOR_X_MAX = 0.68
+# Calibrated for user tabletop lane: Widened lane corridor (0.30 to 0.75) for generous queue space
+DEFAULT_CORRIDOR_X_MIN = 0.30
+DEFAULT_CORRIDOR_X_MAX = 0.75
 
 # ==========================================
 # SENSOR INTEGRATION (ESP32)
